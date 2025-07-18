@@ -1,0 +1,27 @@
+---
+- name: Update /etc/hosts with Tailscale peers
+  hosts: localhost
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Get Tailscale status JSON
+      ansible.builtin.command: tailscale status --json
+      register: tailscale_status_cmd
+
+    - name: Parse Tailscale status JSON
+      ansible.builtin.set_fact:
+        tailscale_status: "{{ tailscale_status_cmd.stdout | from_json }}"
+
+    - name: Build hosts entries for peers (hostname and FQDN)
+      ansible.builtin.set_fact:
+        tailscale_hosts: |
+          {% for peer in tailscale_status['Peer'] | dict2items %}
+          {{ peer.value['TailscaleIPs'][0] }} {{ peer.value['HostName'] }} {{ peer.value['DNSName'] | regex_replace('\\.$', '') }}
+          {% endfor %}
+
+    - name: Update /etc/hosts with Tailscale peers
+      ansible.builtin.blockinfile:
+        path: /etc/hosts
+        marker: "# {mark} ANSIBLE MANAGED TAILSCALE HOSTS"
+        block: "{{ tailscale_hosts }}"
