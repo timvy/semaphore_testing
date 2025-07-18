@@ -1,6 +1,6 @@
 ---
 - name: Update /etc/hosts with Tailscale peers
-  hosts: localhost
+  hosts: all
   become: true
   gather_facts: false
 
