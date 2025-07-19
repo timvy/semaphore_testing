@@ -17,7 +17,7 @@
       ansible.builtin.set_fact:
         tailscale_hosts: |
           {% for peer in tailscale_status['Peer'] | dict2items %}
-          {{ peer.value['TailscaleIPs'][0] }} {{ peer.value['DNSName'] | regex_replace('\\.$', '') }} {{ peer.value['HostName']  }}
+          {{ peer.value['TailscaleIPs'][0] }} {{ peer.value['DNSName'] | regex_replace('\.$', '') }} {{ peer.value['HostName']  }}
           {% endfor %}
 
     - name: Update /etc/hosts with Tailscale peers
